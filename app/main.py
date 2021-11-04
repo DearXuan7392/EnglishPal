@@ -20,28 +20,33 @@ app = Flask(__name__)
 app.secret_key = 'lunch.time!'
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
-path_prefix = './' # comment this line in deployment
+path_prefix = './'  # comment this line in deployment
+
 
 def get_random_image(path):
     img_path = random.choice(glob.glob(os.path.join(path, '*.jpg')))
     return img_path[img_path.rfind('/static'):]
 
+
 def get_random_ads():
     ads = random.choice(['个性化分析精准提升', '你的专有单词本', '智能捕捉阅读弱点，针对性提高你的阅读水平'])
     return ads + '。 <a href="/signup">试试</a>吧！'
+
 
 def total_number_of_essays():
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
     rq.instructions("SELECT * FROM article")
     rq.do()
     result = rq.get_results()
-    return  len(result)
+    return len(result)
+
 
 def load_freq_history(path):
     d = {}
     if os.path.exists(path):
         d = pickle_idea.load_record(path)
     return d
+
 
 def verify_user(username, password):
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
@@ -50,6 +55,7 @@ def verify_user(username, password):
     result = rq.get_results()
     return result != []
 
+
 def add_user(username, password):
     start_date = datetime.now().strftime('%Y%m%d')
     expiry_date = '20211230'
@@ -57,13 +63,14 @@ def add_user(username, password):
     rq.instructions("INSERT INTO user Values ('%s', '%s', '%s', '%s')" % (username, password, start_date, expiry_date))
     rq.do()
 
-    
+
 def check_username_availability(username):
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
     rq.instructions("SELECT * FROM user WHERE name='%s'" % (username))
     rq.do()
     result = rq.get_results()
-    return  result == []
+    return result == []
+
 
 def get_expiry_date(username):
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
@@ -71,14 +78,13 @@ def get_expiry_date(username):
     rq.do()
     result = rq.get_results()
     if len(result) > 0:
-        return  result[0]['expiry_date']
+        return result[0]['expiry_date']
     else:
         return '20191024'
-    
 
 
 def within_range(x, y, r):
-    return x > y and abs(x - y) <= r 
+    return x > y and abs(x - y) <= r
 
 
 def get_article_title(s):
@@ -87,20 +93,20 @@ def get_article_title(s):
 
 def get_article_body(s):
     lst = s.split('\n')
-    lst.pop(0) # remove the first line
-    return '\n'.join(lst) 
+    lst.pop(0)  # remove the first line
+    return '\n'.join(lst)
+
 
 def get_today_article(user_word_list, articleID):
-
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    if articleID == None:    
+    if articleID == None:
         rq.instructions("SELECT * FROM article")
     else:
         rq.instructions('SELECT * FROM article WHERE article_id=%d' % (articleID))
     rq.do()
     result = rq.get_results()
     random.shuffle(result)
-    
+
     # Choose article according to reader's level
     d1 = load_freq_history(path_prefix + 'static/frequency/frequency.p')
     d2 = load_freq_history(path_prefix + 'static/words_and_tests.p')
@@ -108,19 +114,22 @@ def get_today_article(user_word_list, articleID):
 
     d = {}
     d_user = load_freq_history(user_word_list)
-    user_level = user_difficulty_level(d_user, d3) # more consideration as user's behaviour is dynamic. Time factor should be considered.
-    random.shuffle(result) # shuffle list
+    user_level = user_difficulty_level(d_user,
+                                       d3)  # more consideration as user's behaviour is dynamic. Time factor should be considered.
+    random.shuffle(result)  # shuffle list
     d = random.choice(result)
     text_level = text_difficulty_level(d['text'], d3)
     if articleID == None:
         for reading in result:
             text_level = text_difficulty_level(reading['text'], d3)
-            factor = random.gauss(0.8, 0.1) # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
-            if within_range(text_level, user_level, (8.0 - user_level)*factor):
+            factor = random.gauss(0.8,
+                                  0.1)  # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
+            if within_range(text_level, user_level, (8.0 - user_level) * factor):
                 d = reading
                 break
-            
-    s = '<div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">%4.2f</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">%4.2f</span> for you.</div>' % (user_level, text_level)
+
+    s = '<div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">%4.2f</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">%4.2f</span> for you.</div>' % (
+    user_level, text_level)
     s += '<p class="text-muted">Article added on: %s</p>' % (d['date'])
     s += '<div class="p-3 mb-2 bg-light text-dark">'
     article_title = get_article_title(d['text'])
@@ -129,7 +138,7 @@ def get_today_article(user_word_list, articleID):
     s += '<p class="lead">%s</p>' % (article_body)
     s += '<p><small class="text-muted">%s</small></p>' % (d['source'])
     s += '<p><b>%s</b></p>' % (get_question_part(d['question']))
-    s = s.replace('\n', '<br/>')    
+    s = s.replace('\n', '<br/>')
     s += '%s' % (get_answer_part(d['question']))
     s += '</div>'
     session['articleID'] = d['article_id']
@@ -144,7 +153,7 @@ def appears_in_test(word, d):
 
 
 def get_time():
-    return datetime.now().strftime('%Y%m%d%H%M') # upper to minutes
+    return datetime.now().strftime('%Y%m%d%H%M')  # upper to minutes
 
 
 def get_question_part(s):
@@ -227,7 +236,6 @@ def mark_word():
         return 'Under construction'
 
 
-
 @app.route("/", methods=['GET', 'POST'])
 def mainpage():
     if request.method == 'POST':  # when we submit a form
@@ -237,7 +245,8 @@ def mainpage():
         page = '<form method="post" action="/mark">\n'
         count = 1
         for x in lst:
-            page += '<p><font color="grey">%d</font>: <a href="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (count, youdao_link(x[0]), x[0], x[1], x[0])
+            page += '<p><font color="grey">%d</font>: <a href="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (
+            count, youdao_link(x[0]), x[0], x[1], x[0])
             count += 1
         page += ' <input type="submit" value="确定并返回"/>\n'
         page += '</form>\n'
@@ -246,9 +255,9 @@ def mainpage():
         lst_history = pickle_idea.dict2lst(d)
         d = pickle_idea.merge_frequency(lst, lst_history)
         pickle_idea.save_frequency_to_pickle(d, path_prefix + 'static/frequency/frequency.p')
-        
+
         return page
-    elif request.method == 'GET': # when we load a html page
+    elif request.method == 'GET':  # when we load a html page
         page = '''
              <html lang="zh">
                <head>
@@ -267,9 +276,10 @@ def mainpage():
             page += ' <a href="%s">%s</a></p>\n' % (session['username'], session['username'])
         else:
             page += '<p><a href="/login">登录</a>  <a href="/signup">成为会员</a> <a href="/static/usr/instructions.html">使用说明</a></p>\n'
-        #page += '<p><img src="%s" width="400px" alt="advertisement"/></p>' % (get_random_image(path_prefix + 'static/img/'))
+        # page += '<p><img src="%s" width="400px" alt="advertisement"/></p>' % (get_random_image(path_prefix + 'static/img/'))
         page += '<p><b>%s</b></p>' % (get_random_ads())
-        page += '<div class="alert alert-success" role="alert">共有文章 <span class="badge bg-success"> %d </span> 篇</div>' % (total_number_of_essays())
+        page += '<div class="alert alert-success" role="alert">共有文章 <span class="badge bg-success"> %d </span> 篇</div>' % (
+            total_number_of_essays())
         page += '<p>粘帖1篇文章 (English only)</p>'
         page += '<form method="post" action="/">'
         page += ' <textarea name="content" rows="10" cols="120"></textarea><br/>'
@@ -293,7 +303,7 @@ def mainpage():
 @app.route("/<username>/mark", methods=['GET', 'POST'])
 def user_mark_word(username):
     username = session[username]
-    user_freq_record = path_prefix + 'static/frequency/' +  'frequency_%s.pickle' % (username)
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     if request.method == 'POST':
         d = load_freq_history(user_freq_record)
         lst_history = pickle_idea2.dict2lst(d)
@@ -308,72 +318,76 @@ def user_mark_word(username):
 
 
 @app.route("/<username>/<word>/unfamiliar", methods=['GET', 'POST'])
-def unfamiliar(username,word):
+def unfamiliar(username, word):
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
-    pickle_idea.unfamiliar(user_freq_record,word)
+    pickle_idea.unfamiliar(user_freq_record, word)
     session['thisWord'] = word  # 1. put a word into session
     session['time'] = 1
     return redirect(url_for('userpage', username=username))
+
 
 @app.route("/<username>/<word>/familiar", methods=['GET', 'POST'])
-def familiar(username,word):
+def familiar(username, word):
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
-    pickle_idea.familiar(user_freq_record,word)
+    pickle_idea.familiar(user_freq_record, word)
     session['thisWord'] = word  # 1. put a word into session
     session['time'] = 1
     return redirect(url_for('userpage', username=username))
 
+
 @app.route("/<username>/<word>/del", methods=['GET', 'POST'])
-def deleteword(username,word):
+def deleteword(username, word):
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
-    pickle_idea2.deleteRecord(user_freq_record,word)
+    pickle_idea2.deleteRecord(user_freq_record, word)
     flash(f'<strong>{word}</strong> is no longer in your word list.')
     return redirect(url_for('userpage', username=username))
 
+
 @app.route("/<username>", methods=['GET', 'POST'])
 def userpage(username):
-    
     if not session.get('logged_in'):
         return '<p>请先<a href="/login">登录</a>。</p>'
 
     user_expiry_date = session.get('expiry_date')
     if datetime.now().strftime('%Y%m%d') > user_expiry_date:
-        return '<p>账号 %s 过期。</p><p>为了提高服务质量，English Pal 收取会员费用， 每天0元。</p> <p>请决定你要试用的时间长度，扫描下面支付宝二维码支付。 支付时请注明<i>English Pal Membership Fee</i>。 我们会于12小时内激活账号。</p><p><img src="static/donate-the-author-hidden.jpg" width="120px" alt="支付宝二维码" /></p><p>如果有问题，请加开发者微信 torontohui。</p> <p><a href="/logout">登出</a></p>' % (username)
+        return '<p>账号 %s 过期。</p><p>为了提高服务质量，English Pal 收取会员费用， 每天0元。</p> <p>请决定你要试用的时间长度，扫描下面支付宝二维码支付。 支付时请注明<i>English Pal Membership Fee</i>。 我们会于12小时内激活账号。</p><p><img src="static/donate-the-author-hidden.jpg" width="120px" alt="支付宝二维码" /></p><p>如果有问题，请加开发者微信 torontohui。</p> <p><a href="/logout">登出</a></p>' % (
+            username)
 
-    
     username = session.get('username')
 
-    user_freq_record = path_prefix + 'static/frequency/' +  'frequency_%s.pickle' % (username)
-    
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
+
     if request.method == 'POST':  # when we submit a form
         content = request.form['content']
         f = WordFreq(content)
         lst = f.get_freq()
-        page = '<meta charset="UTF8">'        
-        page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />'        
+        page = '<meta charset="UTF8">'
+        page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />'
         page += '<p>勾选不认识的单词</p>'
         page += '<form method="post" action="/%s/mark">\n' % (username)
-        page += ' <input type="submit" name="add-btn" value="加入我的生词簿"/>\n'        
+        page += ' <input type="submit" name="add-btn" value="加入我的生词簿"/>\n'
         count = 1
-        words_tests_dict = pickle_idea.load_record(path_prefix + 'static/words_and_tests.p')        
+        words_tests_dict = pickle_idea.load_record(path_prefix + 'static/words_and_tests.p')
         for x in lst:
-            page += '<p><font color="grey">%d</font>: <a href="%s" title="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (count, youdao_link(x[0]), appears_in_test(x[0], words_tests_dict), x[0], x[1], x[0])
+            page += '<p><font color="grey">%d</font>: <a href="%s" title="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (
+            count, youdao_link(x[0]), appears_in_test(x[0], words_tests_dict), x[0], x[1], x[0])
             count += 1
         page += '</form>\n'
         return page
-    
-    elif request.method == 'GET': # when we load a html page
+
+    elif request.method == 'GET':  # when we load a html page
         page = '<meta charset="UTF8">\n'
         page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />\n'
-        page += '<meta name="format-detection" content="telephone=no" />\n' # forbid treating numbers as cell numbers in smart phones
+        page += '<meta name="format-detection" content="telephone=no" />\n'  # forbid treating numbers as cell numbers in smart phones
         page += '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">'
         page += '<title>EnglishPal Study Room for %s</title>' % (username)
         page += '<div class="container-fluid">'
-        page += '<p><b>English Pal for <font color="red">%s</font></b> <a class="btn btn-secondary" href="/logout" role="button">登出</a></p>' % (username)
+        page += '<p><b>English Pal for <font color="red">%s</font></b> <a class="btn btn-secondary" href="/logout" role="button">登出</a></p>' % (
+            username)
         page += get_flashed_messages_if_any()
         page += '<p><b>阅读文章并回答问题</b></p>\n'
         page += '<p><a class="btn btn-success" href="/%s/reset" role="button"> 下一篇 Next Article </a></p>' % (username)
-        page += '<div id="text-content">%s</div>'  % (get_today_article(user_freq_record, session['articleID']))
+        page += '<div id="text-content">%s</div>' % (get_today_article(user_freq_record, session['articleID']))
         page += '<p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>'
         page += '<form method="post" action="/%s">' % (username)
         page += ' <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>'
@@ -417,18 +431,23 @@ def userpage(username):
                 word = x[0]
                 freq = x[1]
                 if session.get('thisWord') == x[0] and session.get('time') == 1:
-                    page += '<a name="aaa"></a>'    # 3. anchor
-                    session['time'] = 0   # discard anchor
-                if isinstance(d[word], list): # d[word] is a list of dates
+                    page += '<a name="aaa"></a>'  # 3. anchor
+                    session['time'] = 0  # discard anchor
+                if isinstance(d[word], list):  # d[word] is a list of dates
                     if freq > 1:
-                        page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (youdao_link(word), word, '; '.join(d[word]), freq,username, word,username,word, username,word)
+                        page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (
+                        youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
+                        word)
                     else:
-                        page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (youdao_link(word), word, '; '.join(d[word]), freq,username, word,username,word, username,word)
-                elif isinstance(d[word], int): # d[word] is a frequency. to migrate from old format.
+                        page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (
+                        youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
+                        word)
+                elif isinstance(d[word], int):  # d[word] is a frequency. to migrate from old format.
                     page += '<a href="%s">%s</a>%d\n' % (youdao_link(word), word, freq)
         page += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
         page += '</div>'
         return page
+
 
 ### Sign-up, login, logout ###
 @app.route("/signup", methods=['GET', 'POST'])
@@ -466,7 +485,8 @@ def login():
         if not session.get('logged_in'):
             return render_template('login.html')
         else:
-            return '你已登录 <a href="/%s">%s</a>。 登出点击<a href="/logout">这里</a>。' % (session['username'], session['username'])
+            return '你已登录 <a href="/%s">%s</a>。 登出点击<a href="/logout">这里</a>。' % (
+            session['username'], session['username'])
     elif request.method == 'POST':
         # check database and verify user
         username = request.form['username']
@@ -491,8 +511,8 @@ def logout():
 
 
 if __name__ == '__main__':
-    #app.secret_key = os.urandom(16)
-    #app.run(debug=False, port='6000')
-    app.run(debug=True)        
-    #app.run(debug=True, port='6000')
-    #app.run(host='0.0.0.0', debug=True, port='6000')
+    # app.secret_key = os.urandom(16)
+    # app.run(debug=False, port='6000')
+    app.run(debug=True)
+    # app.run(debug=True, port='6000')
+    # app.run(host='0.0.0.0', debug=True, port='6000')

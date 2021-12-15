@@ -6,15 +6,8 @@
 # Written permission must be obtained from the author for commercial uses.
 ###########################################################################
 
-from WordFreq import WordFreq
-from wordfreqCMD import youdao_link, sort_in_descending_order
-from UseSqlite import InsertQuery, RecordQuery
-import pickle_idea, pickle_idea2
-import os
-import random, glob
-from datetime import datetime
-from flask import Flask, request, redirect, render_template, url_for, session, abort, flash, get_flashed_messages
-from difficulty import get_difficulty_level, text_difficulty_level, user_difficulty_level
+from Login import *
+from Article import *
 
 app = Flask(__name__)
 app.secret_key = 'lunch.time!'
@@ -33,118 +26,6 @@ def get_random_ads():
     return ads + '。 <a href="/signup">试试</a>吧！'
 
 
-def total_number_of_essays():
-    rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    rq.instructions("SELECT * FROM article")
-    rq.do()
-    result = rq.get_results()
-    return len(result)
-
-
-def load_freq_history(path):
-    d = {}
-    if os.path.exists(path):
-        d = pickle_idea.load_record(path)
-    return d
-
-
-def verify_user(username, password):
-    rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    rq.instructions_with_parameters("SELECT * FROM user WHERE name=? AND password=?", (username, password))
-    rq.do_with_parameters()
-    result = rq.get_results()
-    return result != []
-
-
-def add_user(username, password):
-    start_date = datetime.now().strftime('%Y%m%d')
-    expiry_date = '20211230'
-    rq = InsertQuery(path_prefix + 'static/wordfreqapp.db')
-    rq.instructions("INSERT INTO user Values ('%s', '%s', '%s', '%s')" % (username, password, start_date, expiry_date))
-    rq.do()
-
-
-def check_username_availability(username):
-    rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    rq.instructions("SELECT * FROM user WHERE name='%s'" % (username))
-    rq.do()
-    result = rq.get_results()
-    return result == []
-
-
-def get_expiry_date(username):
-    rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    rq.instructions("SELECT expiry_date FROM user WHERE name='%s'" % (username))
-    rq.do()
-    result = rq.get_results()
-    if len(result) > 0:
-        return result[0]['expiry_date']
-    else:
-        return '20191024'
-
-
-def within_range(x, y, r):
-    return x > y and abs(x - y) <= r
-
-
-def get_article_title(s):
-    return s.split('\n')[0]
-
-
-def get_article_body(s):
-    lst = s.split('\n')
-    lst.pop(0)  # remove the first line
-    return '\n'.join(lst)
-
-
-def get_today_article(user_word_list, articleID):
-    rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    if articleID == None:
-        rq.instructions("SELECT * FROM article")
-    else:
-        rq.instructions('SELECT * FROM article WHERE article_id=%d' % (articleID))
-    rq.do()
-    result = rq.get_results()
-    random.shuffle(result)
-
-    # Choose article according to reader's level
-    d1 = load_freq_history(path_prefix + 'static/frequency/frequency.p')
-    d2 = load_freq_history(path_prefix + 'static/words_and_tests.p')
-    d3 = get_difficulty_level(d1, d2)
-
-    d = {}
-    d_user = load_freq_history(user_word_list)
-    user_level = user_difficulty_level(d_user,
-                                       d3)  # more consideration as user's behaviour is dynamic. Time factor should be considered.
-    random.shuffle(result)  # shuffle list
-    d = random.choice(result)
-    text_level = text_difficulty_level(d['text'], d3)
-    if articleID == None:
-        for reading in result:
-            text_level = text_difficulty_level(reading['text'], d3)
-            factor = random.gauss(0.8,
-                                  0.1)  # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
-            if within_range(text_level, user_level, (8.0 - user_level) * factor):
-                d = reading
-                break
-
-    s = '<div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">%4.2f</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">%4.2f</span> for you.</div>' % (
-    user_level, text_level)
-    s += '<p class="text-muted">Article added on: %s</p>' % (d['date'])
-    s += '<div class="p-3 mb-2 bg-light text-dark">'
-    article_title = get_article_title(d['text'])
-    article_body = get_article_body(d['text'])
-    s += '<p class="display-3">%s</p>' % (article_title)
-    s += '<p class="lead">%s</p>' % (article_body)
-    s += '<p><small class="text-muted">%s</small></p>' % (d['source'])
-    s += '<p><b>%s</b></p>' % (get_question_part(d['question']))
-    s = s.replace('\n', '<br/>')
-    s += '%s' % (get_answer_part(d['question']))
-    s += '</div>'
-    session['articleID'] = d['article_id']
-    return s
-
-
 def appears_in_test(word, d):
     if not word in d:
         return ''
@@ -154,52 +35,6 @@ def appears_in_test(word, d):
 
 def get_time():
     return datetime.now().strftime('%Y%m%d%H%M')  # upper to minutes
-
-
-def get_question_part(s):
-    s = s.strip()
-    result = []
-    flag = 0
-    for line in s.split('\n'):
-        line = line.strip()
-        if line == 'QUESTION':
-            result.append(line)
-            flag = 1
-        elif line == 'ANSWER':
-            flag = 0
-        elif flag == 1:
-            result.append(line)
-    return '\n'.join(result)
-
-
-def get_answer_part(s):
-    s = s.strip()
-    result = []
-    flag = 0
-    for line in s.split('\n'):
-        line = line.strip()
-        if line == 'ANSWER':
-            flag = 1
-        elif flag == 1:
-            result.append(line)
-    # https://css-tricks.com/snippets/javascript/showhide-element/
-    js = '''
-<script type="text/javascript">
-
-    function toggle_visibility(id) {
-       var e = document.getElementById(id);
-       if(e.style.display == 'block')
-          e.style.display = 'none';
-       else
-          e.style.display = 'block';
-    }
-</script>   
-    '''
-    html_code = js
-    html_code += '\n'
-    html_code += '<button onclick="toggle_visibility(\'answer\');">ANSWER</button>\n'
-    html_code += '<div id="answer" style="display:none;">%s</div>\n' % ('\n'.join(result))
-    return html_code
 
 
 def get_flashed_messages_if_any():
@@ -246,7 +81,7 @@ def mainpage():
         count = 1
         for x in lst:
             page += '<p><font color="grey">%d</font>: <a href="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (
-            count, youdao_link(x[0]), x[0], x[1], x[0])
+                count, youdao_link(x[0]), x[0], x[1], x[0])
             count += 1
         page += ' <input type="submit" value="确定并返回"/>\n'
         page += '</form>\n'
@@ -370,7 +205,7 @@ def userpage(username):
         words_tests_dict = pickle_idea.load_record(path_prefix + 'static/words_and_tests.p')
         for x in lst:
             page += '<p><font color="grey">%d</font>: <a href="%s" title="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (
-            count, youdao_link(x[0]), appears_in_test(x[0], words_tests_dict), x[0], x[1], x[0])
+                count, youdao_link(x[0]), appears_in_test(x[0], words_tests_dict), x[0], x[1], x[0])
             count += 1
         page += '</form>\n'
         return page
@@ -436,12 +271,12 @@ def userpage(username):
                 if isinstance(d[word], list):  # d[word] is a list of dates
                     if freq > 1:
                         page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (
-                        youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
-                        word)
+                            youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
+                            word)
                     else:
                         page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (
-                        youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
-                        word)
+                            youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
+                            word)
                 elif isinstance(d[word], int):  # d[word] is a frequency. to migrate from old format.
                     page += '<a href="%s">%s</a>%d\n' % (youdao_link(word), word, freq)
         page += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
@@ -486,7 +321,7 @@ def login():
             return render_template('login.html')
         else:
             return '你已登录 <a href="/%s">%s</a>。 登出点击<a href="/logout">这里</a>。' % (
-            session['username'], session['username'])
+                session['username'], session['username'])
     elif request.method == 'POST':
         # check database and verify user
         username = request.form['username']
@@ -516,3 +351,4 @@ if __name__ == '__main__':
     app.run(debug=True)
     # app.run(debug=True, port='6000')
     # app.run(host='0.0.0.0', debug=True, port='6000')
+    # print(mod5('123'))

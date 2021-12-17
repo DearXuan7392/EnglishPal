@@ -215,16 +215,22 @@ def userpage(username):
         page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />\n'
         page += '<meta name="format-detection" content="telephone=no" />\n'  # forbid treating numbers as cell numbers in smart phones
         page += '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">'
-        page += '<title>EnglishPal Study Room for %s</title>' % (username)
+        page += '<title>EnglishPal Study Room for %s</title>' % username
         page += '<div class="container-fluid">'
-        page += '<p><b>English Pal for <font color="red">%s</font></b> <a class="btn btn-secondary" href="/logout" role="button">登出</a></p>' % (
-            username)
+        page += '''
+<p>
+<b>English Pal for <font color="red">%s</font></b> 
+    <a class="btn btn-secondary" href="/logout" role="button">登出</a>
+    <a class="btn btn-secondary" href="/reset" role="button">重设密码</a>
+</p>
+        
+''' % username
         page += get_flashed_messages_if_any()
         page += '<p><b>阅读文章并回答问题</b></p>\n'
-        page += '<p><a class="btn btn-success" href="/%s/reset" role="button"> 下一篇 Next Article </a></p>' % (username)
+        page += '<p><a class="btn btn-success" href="/%s/reset" role="button"> 下一篇 Next Article </a></p>' % username
         page += '<div id="text-content">%s</div>' % (get_today_article(user_freq_record, session['articleID']))
         page += '<p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>'
-        page += '<form method="post" action="/%s">' % (username)
+        page += '<form method="post" action="/%s">' % username
         page += ' <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>'
         page += ' <input type="submit" value="get 所有词的频率"/>'
         page += ' <input type="reset" value="清除"/>'
@@ -343,6 +349,34 @@ def login():
 def logout():
     session['logged_in'] = False
     return redirect(url_for('mainpage'))
+
+
+@app.route("/reset", methods=['GET', 'POST'])
+def reset():
+    if not session.get('logged_in'): # 未登录
+        return render_template('login.html')
+    username = session['username']
+    if username == '':
+        return redirect('/login')
+    if request.method == 'GET':
+        page = '''
+<html>
+    <body>
+    旧密码:
+    <input type="password" name="old-psd" />
+    <br/>
+    新密码:
+    <input type="password" name="new-psd" />
+    </body>
+    <br/>
+    <input type="submit" action="reset" name="submit" value="提交" />
+</html>
+'''
+    else:
+        page = '''
+
+'''
+    return page
 
 
 if __name__ == '__main__':

@@ -373,9 +373,7 @@ def reset():
 </html>
 '''
     else:
-        page = '''
-
-'''
+        return redirect('/login')
     return page
 
 

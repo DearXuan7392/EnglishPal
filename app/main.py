@@ -196,7 +196,7 @@ def userpage(username):
         content = request.form['content']
         f = WordFreq(content)
         lst = f.get_freq()
-        page = '<meta charset="UTF8">'
+        page = '<html><body><meta charset="UTF8">'
         page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />'
         page += '<p>勾选不认识的单词</p>'
         page += '<form method="post" action="/%s/mark">\n' % (username)
@@ -207,7 +207,7 @@ def userpage(username):
             page += '<p><font color="grey">%d</font>: <a href="%s" title="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (
                 count, youdao_link(x[0]), appears_in_test(x[0], words_tests_dict), x[0], x[1], x[0])
             count += 1
-        page += '</form>\n'
+        page += '</form>\n</body></html>'
         return page
 
     elif request.method == 'GET':  # when we load a html page
@@ -234,11 +234,14 @@ def userpage(username):
         page += ' <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>'
         page += ' <input type="submit" value="get 所有词的频率"/>'
         page += ' <input type="reset" value="清除"/>'
+        page += ' <br/><input type="checkbox" onclick="onReadClick()" checked />大声朗读'
         page += '</form>\n'
         page += ''' 
                  <script>
+                   isRead = true;
                    function getWord(){ 
                        var word = window.getSelection?window.getSelection():document.selection.createRange().text;
+                       if (isRead) read(word);
                        return word;
                    }
                    function fillinWord(){
@@ -247,6 +250,13 @@ def userpage(username):
                    }
                    document.getElementById("text-content").addEventListener("click", fillinWord, false);
                    document.getElementById("text-content").addEventListener("touchstart", fillinWord, false);
+                   function read(s){
+                       var msg = new SpeechSynthesisUtterance(s);
+                       window.speechSynthesis.speak(msg);
+                   }
+                   function onReadClick(){
+                        isRead = !isRead;
+                   }
                  </script>
                  '''
         if session.get('thisWord'):

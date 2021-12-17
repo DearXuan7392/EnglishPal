@@ -349,7 +349,6 @@ if __name__ == '__main__':
     # app.secret_key = os.urandom(16)
     # app.run(debug=False, port='6000')
     app.run(debug=True)
-    print(2)
     # app.run(debug=True, port='6000')
     # app.run(host='0.0.0.0', debug=True, port='6000')
     # print(mod5('123'))

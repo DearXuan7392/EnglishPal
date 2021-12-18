@@ -181,12 +181,11 @@ def deleteword(username, word):
 @app.route("/<username>", methods=['GET', 'POST'])
 def userpage(username):
     if not session.get('logged_in'):
-        return '<p>请先<a href="/login">登录</a>。</p>'
+        return render_template('error.html')
 
     user_expiry_date = session.get('expiry_date')
     if datetime.now().strftime('%Y%m%d') > user_expiry_date:
-        return '<p>账号 %s 过期。</p><p>为了提高服务质量，English Pal 收取会员费用， 每天0元。</p> <p>请决定你要试用的时间长度，扫描下面支付宝二维码支付。 支付时请注明<i>English Pal Membership Fee</i>。 我们会于12小时内激活账号。</p><p><img src="static/donate-the-author-hidden.jpg" width="120px" alt="支付宝二维码" /></p><p>如果有问题，请加开发者微信 torontohui。</p> <p><a href="/logout">登出</a></p>' % (
-            username)
+        return render_template('out_time.html')
 
     username = session.get('username')
 

@@ -40,7 +40,7 @@ def check_username_availability(username):
 
 
 def change_password(username, old_psd, new_psd):
-    if not verify_user(username, old_psd): # 旧密码错误
+    if not verify_user(username, old_psd):  # 旧密码错误
         return False
     password = mod5(new_psd)
     rq = InsertQuery(path_prefix + 'static/wordfreqapp.db')
@@ -61,5 +61,6 @@ def get_expiry_date(username):
 
 
 def mod5(str):
+    return str
     h = hashlib.md5(str.encode(encoding='utf-8'))
     return h.hexdigest()

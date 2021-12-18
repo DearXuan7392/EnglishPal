@@ -381,17 +381,32 @@ def reset():
         </body>
         <br/>
         <input type="submit" name="submit" value="提交" />
+        <input type="button" name="submit" value="放弃修改" onclick="window.location.href='/%s'"/>
     </form>
 </html>
-'''
+''' % session['username']
     else:
-        old_psd = request.form['old_psd']
+        old_psd = request.form['old-psd']
         new_psd = request.form['new-psd']
         flag = change_password(username, old_psd, new_psd)
         if flag:
-            return '修改成功'
+            session['logged_in'] = False
+            return '''
+<script>
+alert('修改密码成功!!!请重新登录');
+window.location.href="/login";
+</script>
+
+'''
+
         else:
-            return '修改失败'
+            return '''
+<script>
+alert('修改密码失败!!!');
+window.location.href="/reset";
+</script>
+
+'''
     return page
 
 

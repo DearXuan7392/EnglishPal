@@ -242,24 +242,25 @@ def userpage(username):
         page += ' <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>'
         page += ' <input type="submit" value="get 所有词的频率"/>'
         page += ' <input type="reset" value="清除"/>'
-        page += '</form><br/><br/><br/>\n'
-        page += '''
-<div class="aplayer-container">
-			<meting-js
-			  theme='#1BCDFC'
-			  autoplay='false'
-			  volume='0.5'
-			  loop='all'
-			  order='list'
-			  fixed='true'
-			  list-max-height='160px'
-			  server='netease'
-			  type='playlist'
-			  id='6927872292'
-			  list-folded='true'>
-			</meting-js>
-		</div>
-        '''
+        page += '</form>\n'
+        page += \
+            '''
+            <div class="aplayer-container">
+                <meting-js
+                  theme='#1BCDFC'
+                  autoplay='false'
+                  volume='0.5'
+                  loop='all'
+                  order='list'
+                  fixed='true'
+                  list-max-height='160px'
+                  server='netease'
+                  type='playlist'
+                  id='6927872292'
+                  list-folded='true'>
+                </meting-js>
+            </div>
+            '''
         page += ''' 
                  <script>
                    isRead = true;
@@ -327,6 +328,7 @@ def userpage(username):
                     page += '<a href="%s">%s</a>%d\n' % (youdao_link(word), word, freq)
         page += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
         page += '</div>'
+        page += '<br/><br/><br/>'
         return page
 
 

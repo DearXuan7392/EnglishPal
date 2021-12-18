@@ -227,6 +227,8 @@ def userpage(username):
 ''' % username
         page += get_flashed_messages_if_any()
         page += '<p><b>阅读文章并回答问题</b></p>\n'
+        page += ' <br/><input type="checkbox" onclick="onReadClick()" checked />大声朗读'
+        page += ' <input type="checkbox" onclick="onChooseClick()" checked />划词入库'
         page += '<p><a class="btn btn-success" href="/%s/reset" role="button"> 下一篇 Next Article </a></p>' % username
         page += '<div id="text-content">%s</div>' % (get_today_article(user_freq_record, session['articleID']))
         page += '<p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>'
@@ -234,7 +236,6 @@ def userpage(username):
         page += ' <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>'
         page += ' <input type="submit" value="get 所有词的频率"/>'
         page += ' <input type="reset" value="清除"/>'
-        page += ' <br/><input type="checkbox" onclick="onReadClick()" checked />大声朗读'
         page += '</form>\n'
         page += ''' 
                  <script>
@@ -245,6 +246,7 @@ def userpage(username):
                        return word;
                    }
                    function fillinWord(){
+                       if (!isChoose) return;
                        var element = document.getElementById("selected-words");
                        element.value = element.value + " " + getWord();
                    }
@@ -256,6 +258,9 @@ def userpage(username):
                    }
                    function onReadClick(){
                         isRead = !isRead;
+                   }
+                   function onChooseClick(){
+                        isChoose = !isChoose;
                    }
                  </script>
                  '''

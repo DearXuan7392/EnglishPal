@@ -39,6 +39,16 @@ def check_username_availability(username):
     return result == []
 
 
+def change_password(username, old_psd, new_psd):
+    if not verify_user(username, old_psd): # 旧密码错误
+        return False
+    password = mod5(new_psd)
+    rq = InsertQuery(path_prefix + 'static/wordfreqapp.db')
+    rq.instructions("UPDATE user SET password = '%s' WHERE name = '%s'" % (password, username))
+    rq.do()
+    return True
+
+
 def get_expiry_date(username):
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
     rq.instructions("SELECT expiry_date FROM user WHERE name='%s'" % (username))

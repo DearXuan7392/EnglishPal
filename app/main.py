@@ -372,18 +372,26 @@ def reset():
         page = '''
 <html>
     <body>
-    旧密码:
-    <input type="password" name="old-psd" />
-    <br/>
-    新密码:
-    <input type="password" name="new-psd" />
-    </body>
-    <br/>
-    <input type="submit" action="reset" name="submit" value="提交" />
+    <form action="/reset" method='POST'>
+        旧密码:
+        <input type="password" name="old-psd" />
+        <br/>
+        新密码:
+        <input type="password" name="new-psd" />
+        </body>
+        <br/>
+        <input type="submit" name="submit" value="提交" />
+    </form>
 </html>
 '''
     else:
-        return redirect('/login')
+        old_psd = request.form['old_psd']
+        new_psd = request.form['new-psd']
+        flag = change_password(username, old_psd, new_psd)
+        if flag:
+            return '修改成功'
+        else:
+            return '修改失败'
     return page
 
 

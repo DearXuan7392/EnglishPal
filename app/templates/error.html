@@ -1,11 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>登录失败</title>
-</head>
-<body>
-{#if not session.get('logged_in'):#}
+{% block body %}
+{% if not session['logged_in'] %}
     <p>请先<a href="/login">登录</a></p>
-</body>
-</html>
+{% endif %}
+{% endblock %}

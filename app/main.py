@@ -214,6 +214,13 @@ def userpage(username):
         page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />\n'
         page += '<meta name="format-detection" content="telephone=no" />\n'  # forbid treating numbers as cell numbers in smart phones
         page += '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">'
+        page += '''
+<head>
+	    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/dearxuan7392/picture/aplayercss.css">
+        <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+	    <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
+	</head>
+        '''
         page += '<title>EnglishPal Study Room for %s</title>' % username
         page += '<div class="container-fluid">'
         page += '''
@@ -235,7 +242,24 @@ def userpage(username):
         page += ' <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>'
         page += ' <input type="submit" value="get 所有词的频率"/>'
         page += ' <input type="reset" value="清除"/>'
-        page += '</form>\n'
+        page += '</form><br/><br/><br/>\n'
+        page += '''
+<div class="aplayer-container">
+			<meting-js
+			  theme='#1BCDFC'
+			  autoplay='false'
+			  volume='0.5'
+			  loop='all'
+			  order='list'
+			  fixed='true'
+			  list-max-height='160px'
+			  server='netease'
+			  type='playlist'
+			  id='6927872292'
+			  list-folded='true'>
+			</meting-js>
+		</div>
+        '''
         page += ''' 
                  <script>
                    isRead = true;
@@ -369,7 +393,7 @@ def logout():
 
 @app.route("/reset", methods=['GET', 'POST'])
 def reset():
-    if not session.get('logged_in'): # 未登录
+    if not session.get('logged_in'):  # 未登录
         return render_template('login.html')
     username = session['username']
     if username == '':

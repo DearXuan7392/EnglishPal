@@ -1,13 +1,7 @@
-from WordFreq import WordFreq
-from wordfreqCMD import youdao_link, sort_in_descending_order
-from UseSqlite import InsertQuery, RecordQuery
-import pickle_idea, pickle_idea2
-import os
-import random, glob
 import hashlib
 from datetime import datetime
-from flask import Flask, request, redirect, render_template, url_for, session, abort, flash, get_flashed_messages
-from difficulty import get_difficulty_level, text_difficulty_level, user_difficulty_level
+
+from UseSqlite import InsertQuery, RecordQuery
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
 path_prefix = './'  # comment this line in deployment
@@ -15,7 +9,7 @@ path_prefix = './'  # comment this line in deployment
 
 def verify_user(username, password):
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    password = mod5(password)
+    password = mod5(username + password)
     rq.instructions_with_parameters("SELECT * FROM user WHERE name=? AND password=?", (username, password))
     rq.do_with_parameters()
     result = rq.get_results()
@@ -25,7 +19,7 @@ def verify_user(username, password):
 def add_user(username, password):
     start_date = datetime.now().strftime('%Y%m%d')
     expiry_date = '20211230'
-    password = mod5(password)
+    password = mod5(username + password)
     rq = InsertQuery(path_prefix + 'static/wordfreqapp.db')
     rq.instructions("INSERT INTO user Values ('%s', '%s', '%s', '%s')" % (username, password, start_date, expiry_date))
     rq.do()
@@ -42,7 +36,7 @@ def check_username_availability(username):
 def change_password(username, old_psd, new_psd):
     if not verify_user(username, old_psd):  # 旧密码错误
         return False
-    password = mod5(new_psd)
+    password = mod5(username + new_psd)
     rq = InsertQuery(path_prefix + 'static/wordfreqapp.db')
     rq.instructions("UPDATE user SET password = '%s' WHERE name = '%s'" % (password, username))
     rq.do()

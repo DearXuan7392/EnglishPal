@@ -142,7 +142,7 @@ def deleteword(username, word):
 @app.route("/<username>", methods=['GET', 'POST'])
 def userpage(username):
     if not session.get('logged_in'):
-        return render_template('error.html')
+        return render_template('not_login.html')
 
     user_expiry_date = session.get('expiry_date')
     if datetime.now().strftime('%Y%m%d') > user_expiry_date:

@@ -9,7 +9,10 @@
 </head>
 <body>
     <div class="container-fluid">
-    <p><b>English Pal for <font color="red">{{username}}</font></b> <a class="btn btn-secondary" href="/logout" role="button">登出</a></p>
+    <p><b>English Pal for <font color="red">{{username}}</font></b>
+        <a class="btn btn-secondary" href="/logout" role="button">登出</a>
+        <a class="btn btn-secondary" href="/reset" role="button">重设密码</a>
+    </p>
         {{flashed_messages}}
     <p><b>阅读文章并回答问题</b></p>
     <p><a class="btn btn-success" href="/{{username}}/reset" role="button"> 下一篇 Next Article </a></p>
@@ -58,6 +61,7 @@
                 (
                 <a title="{{word}}">{{freq}}</a>
                 )
+
                 <a class="btn btn-success" href={{username}}/{{word}}/familiar role="button">熟悉</a>
                 <a class="btn btn-warning" href={{username}}/{{word}}/unfamiliar role="button">不熟悉</a>
                 <a class="btn btn-danger" href={{username}}/{{word}}/del role="button">删除</a>

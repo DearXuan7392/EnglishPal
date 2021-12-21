@@ -6,13 +6,13 @@
     <meta name="format-detection" content="telephone=no" />
 
     {{ yml['header'] | safe }}
-    {% if yml['user']['css'] %}
-        {% for css in yml['user']['css'] %}
+    {% if yml['css']['item'] %}
+        {% for css in yml['css']['item'] %}
         <link href="{{ css }}" rel="stylesheet">
         {% endfor %}
     {% endif %}
-    {% if yml['user']['js'] %}
-        {% for js in yml['user']['js'] %}
+    {% if yml['js']['head'] %}
+        {% for js in yml['js']['head'] %}
             <script src="{{ js }}" ></script>
         {% endfor %}
     {% endif %}
@@ -36,5 +36,10 @@
        {% endfor %}
        </form>
     {{ yml['footer'] | safe }}
+    {% if yml['js']['bottom'] %}
+        {% for js in yml['js']['bottom'] %}
+            <script src="{{ js }}" ></script>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>

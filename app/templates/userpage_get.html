@@ -7,14 +7,14 @@
     <meta name="format-detection" content="telephone=no"/>
 
     {{ yml['header'] | safe }}
-    {% if yml['user']['css'] %}
-        {% for css in yml['user']['css'] %}
-            <link href="{{ css }}" rel="stylesheet">
+    {% if yml['css']['item'] %}
+        {% for css in yml['css']['item'] %}
+        <link href="{{ css }}" rel="stylesheet">
         {% endfor %}
     {% endif %}
-    {% if yml['user']['js'] %}
-        {% for js in yml['user']['js'] %}
-            <script src="{{ js }}"></script>
+    {% if yml['js']['head'] %}
+        {% for js in yml['js']['head'] %}
+            <script src="{{ js }}" ></script>
         {% endfor %}
     {% endif %}
 
@@ -87,12 +87,14 @@
         {% else %}
             <a href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'>{{ word }}</a>{{ freq }}
         {% endfor %}
-        <script>
-            words = {{ words }};
-        </script>
         <input id="selected-words2" type="hidden" value="{{ words }}">
     {% endif %}
 </div>
 {{ yml['footer'] | safe }}
+{% if yml['js']['bottom'] %}
+        {% for js in yml['js']['bottom'] %}
+            <script src="{{ js }}" ></script>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>

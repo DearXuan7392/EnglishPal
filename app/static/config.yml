@@ -1,11 +1,13 @@
-# 主界面引入
-main:
-  css:
+css:
+  item:
+    - static/css/bootstrap.css
+    - static/css/aplayercss.css
+    - static/css/custom.css
 
-  js:
-
-# 用户界面引入
-user:
-  css:
-
-  js:
+js:
+  head:
+    - static/js/APlayer.js
+    - static/js/Meting.js
+  bottom:
+    - static/js/fillword.js
+    - static/js/highlight.js

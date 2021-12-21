@@ -5,13 +5,13 @@
     <title>Title</title>
 
     {{ yml['header'] | safe }}
-    {% if yml['main']['css'] %}
-        {% for css in yml['main']['css'] %}
+    {% if yml['css']['item'] %}
+        {% for css in yml['css']['item'] %}
         <link href="{{ css }}" rel="stylesheet">
         {% endfor %}
     {% endif %}
-    {% if yml['main']['js'] %}
-        {% for js in yml['main']['js'] %}
+    {% if yml['js']['head'] %}
+        {% for js in yml['js']['head'] %}
             <script src="{{ js }}" ></script>
         {% endfor %}
     {% endif %}
@@ -31,5 +31,10 @@
     <input type="submit" value="确定并返回"/>
     </form>
     {{ yml['footer'] | safe }}
+{% if yml['js']['bottom'] %}
+        {% for js in yml['js']['bottom'] %}
+            <script src="{{ js }}" ></script>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>

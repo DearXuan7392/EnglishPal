@@ -1,0 +1,12 @@
+main:
+  head:
+    css:
+      - static/css/bootstrap.css
+    js:
+
+user:
+  head:
+    css:
+
+    js:
+      - static/js/fillword.js

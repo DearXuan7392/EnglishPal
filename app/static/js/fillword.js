@@ -9,10 +9,9 @@ function fillinWord(){
    if (isRead) read(word);
    if (!isChoose) return;
    var element = document.getElementById("selected-words");
-   element.value = element.value + " " + getWord();
+   element.value = element.value + " " + word;
 }
 document.getElementById("text-content").addEventListener("click", fillinWord, false);
-document.getElementById("text-content").addEventListener("touchstart", fillinWord, false);
 function read(s){
    var msg = new SpeechSynthesisUtterance(s);
    window.speechSynthesis.speak(msg);

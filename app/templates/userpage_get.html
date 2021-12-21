@@ -30,6 +30,8 @@
     <p><b>阅读文章并回答问题</b></p>
     <input type="checkbox" onclick="onReadClick()" checked/>大声朗读
     <input type="checkbox" onclick="onChooseClick()" checked/>划词入库
+    <button id="cancel_highlight" onclick="cancelBtnHandler()">取消高亮</button>
+    <button id="show_highlight" onclick="showBtnHandler()">显示高亮</button>
     <p><a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a></p>
     <div id="text-content">{{ today_article|safe }}</div>
     <p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>
@@ -53,6 +55,7 @@
         <p><b>我的生词簿</b></p>
         {% for x in lst3 %}
             {% set word = x[0] %}
+
             {% set freq = x[1] %}
             {% if session.get('thisWord') == x[0] and session.get('time') == 1 %}
                 <a name="aaa"></a>
@@ -84,6 +87,10 @@
         {% else %}
             <a href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'>{{ word }}</a>{{ freq }}
         {% endfor %}
+        <script>
+            words = {{ words }};
+        </script>
+        <input id="selected-words2" type="hidden" value="{{ words }}">
     {% endif %}
 </div>
 {{ yml['footer'] | safe }}

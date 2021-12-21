@@ -165,6 +165,9 @@ def userpage(username):
         for t in lst:
             lst2.append((t[0], len(t[1])))
         lst3 = sort_in_descending_order(lst2)
+        words = ''
+        for x in lst3:
+            words += x[0] + ' '
         return render_template('userpage_get.html',
                                username=username,
                                session=session,
@@ -172,7 +175,8 @@ def userpage(username):
                                today_article=get_today_article(user_freq_record, session['articleID']),
                                d_len=len(d),
                                lst3=lst3,
-                               yml=Yaml.yml)
+                               yml=Yaml.yml,
+                               words=words)
 
 
 ### Sign-up, login, logout ###

@@ -11,8 +11,8 @@
         {% endfor %}
     {% endif %}
     {% if yml['main']['js'] %}
-        {% for css in yml['main']['js'] %}
-        <link href="{{ css }}" rel="javascript">
+        {% for js in yml['main']['js'] %}
+            <script src="{{ js }}" ></script>
         {% endfor %}
     {% endif %}
 

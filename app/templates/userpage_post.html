@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />
     <meta name="format-detection" content="telephone=no" />
+
+    {{ yml['header'] | safe }}
+    {% if yml['user']['css'] %}
+        {% for css in yml['user']['css'] %}
+        <link href="{{ css }}" rel="stylesheet">
+        {% endfor %}
+    {% endif %}
+    {% if yml['user']['js'] %}
+        {% for js in yml['user']['js'] %}
+            <script src="{{ js }}" ></script>
+        {% endfor %}
+    {% endif %}
+
     <title>EnglishPal Study Room for {{username}}</title>
 </head>
 <body>

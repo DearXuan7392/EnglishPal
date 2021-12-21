@@ -244,14 +244,15 @@ def reset():
     if username == '':
         return redirect('/login')
     if request.method == 'GET':
-        return render_template('reset.html', username=session['username'])
+        return render_template('reset.html', username=session['username'], state='wait')
     else:
         old_psd = request.form['old-psd']
         new_psd = request.form['new-psd']
         flag = change_password(username, old_psd, new_psd)
         if flag:
             session['logged_in'] = False
-            return '''
+            return \
+'''
 <script>
 alert('修改密码成功!!!请重新登录');
 window.location.href="/login";
@@ -260,14 +261,14 @@ window.location.href="/login";
 '''
 
         else:
-            return '''
+            return \
+'''
 <script>
 alert('修改密码失败!!!');
 window.location.href="/reset";
 </script>
 
 '''
-    return page
 
 
 if __name__ == '__main__':

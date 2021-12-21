@@ -77,62 +77,21 @@ def mainpage():
         content = request.form['content']
         f = WordFreq(content)
         lst = f.get_freq()
-        page = '<form method="post" action="/mark">\n'
-        count = 1
-        for x in lst:
-            page += '<p><font color="grey">%d</font>: <a href="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (
-                count, youdao_link(x[0]), x[0], x[1], x[0])
-            count += 1
-        page += ' <input type="submit" value="确定并返回"/>\n'
-        page += '</form>\n'
-        # save history 
+        # save history
         d = load_freq_history(path_prefix + 'static/frequency/frequency.p')
         lst_history = pickle_idea.dict2lst(d)
         d = pickle_idea.merge_frequency(lst, lst_history)
         pickle_idea.save_frequency_to_pickle(d, path_prefix + 'static/frequency/frequency.p')
+        return render_template('mainpage_post.html', lst=lst)
 
-        return page
     elif request.method == 'GET':  # when we load a html page
-        page = '''
-             <html lang="zh">
-               <head>
-               <meta charset="utf-8">
-               <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />
-               <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
-                 <title>EnglishPal 英文单词高效记</title>
-
-               </head>
-               <body>
-        '''
-        page += '<div class="container-fluid">'
-        page += '<p><b><font size="+3" color="red">English Pal - Learn English smartly!</font></b></p>'
-        if session.get('logged_in'):
-            page += ' <a href="%s">%s</a></p>\n' % (session['username'], session['username'])
-        else:
-            page += '<p><a href="/login">登录</a>  <a href="/signup">成为会员</a> <a href="/static/usr/instructions.html">使用说明</a></p>\n'
-        # page += '<p><img src="%s" width="400px" alt="advertisement"/></p>' % (get_random_image(path_prefix + 'static/img/'))
-        page += '<p><b>%s</b></p>' % (get_random_ads())
-        page += '<div class="alert alert-success" role="alert">共有文章 <span class="badge bg-success"> %d </span> 篇</div>' % (
-            total_number_of_essays())
-        page += '<p>粘帖1篇文章 (English only)</p>'
-        page += '<form method="post" action="/">'
-        page += ' <textarea name="content" rows="10" cols="120"></textarea><br/>'
-        page += ' <input type="submit" value="get文章中的词频"/>'
-        page += ' <input type="reset" value="清除"/>'
-        page += '</form>'
+        random_ads = get_random_ads()
+        number_of_essays = total_number_of_essays()
         d = load_freq_history(path_prefix + 'static/frequency/frequency.p')
-        if len(d) > 0:
-            page += '<p><b>最常见的词</b></p>'
-            for x in sort_in_descending_order(pickle_idea.dict2lst(d)):
-                if x[1] <= 99:
-                    break
-                page += '<a href="%s">%s</a> %d\n' % (youdao_link(x[0]), x[0], x[1])
-
-        page += ' <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
-        page += '</div>'
-        page += '</body></html>'
-        return page
+        d_len = len(d)
+        lst = sort_in_descending_order(pickle_idea.dict2lst(d))
+        return render_template('mainpage_get.html', random_ads=random_ads, number_of_essays=number_of_essays, d_len=d_len,
+                               lst=lst)
 
 
 @app.route("/<username>/mark", methods=['GET', 'POST'])
@@ -214,6 +173,7 @@ def userpage(username):
         page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />\n'
         page += '<meta name="format-detection" content="telephone=no" />\n'  # forbid treating numbers as cell numbers in smart phones
         page += '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">'
+        page += '<link href="static/res/test.css" rel="stylesheet">'
         page += '<title>EnglishPal Study Room for %s</title>' % username
         page += '<div class="container-fluid">'
         page += '''

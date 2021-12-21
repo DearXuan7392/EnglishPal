@@ -12,8 +12,8 @@
         {% endfor %}
     {% endif %}
     {% if yml['user']['js'] %}
-        {% for css in yml['user']['js'] %}
-        <link href="{{ css }}" rel="javascript">
+        {% for js in yml['user']['js'] %}
+            <script src="{{ js }}" ></script>
         {% endfor %}
     {% endif %}
 
@@ -27,6 +27,8 @@
     </p>
         {{flashed_messages}}
     <p><b>阅读文章并回答问题</b></p>
+    <input type="checkbox" onclick="onReadClick()" checked />大声朗读
+    <input type="checkbox" onclick="onChooseClick()" checked />划词入库
     <p><a class="btn btn-success" href="/{{username}}/reset" role="button"> 下一篇 Next Article </a></p>
       <div id="text-content">{{today_article|safe}}</div>
       <p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>

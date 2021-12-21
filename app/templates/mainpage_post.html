@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    {% for css in yml['head']['css'] %}
+    <link href="{{ css }}" rel="stylesheet">
+    {% endfor %}
+    {% for js in yml['head']['js'] %}
+    <link href="{{ js }}" rel="javascript">
+    {% endfor %}
 </head>
 <body>
     <form method="post" action="/mark">

@@ -8,6 +8,7 @@
 
 from Login import *
 from Article import *
+import Yaml
 
 app = Flask(__name__)
 app.secret_key = 'lunch.time!'
@@ -18,6 +19,7 @@ path_prefix = './'  # comment this line in deployment
 
 def get_random_image(path):
     img_path = random.choice(glob.glob(os.path.join(path, '*.jpg')))
+
     return img_path[img_path.rfind('/static'):]
 
 
@@ -82,7 +84,7 @@ def mainpage():
         lst_history = pickle_idea.dict2lst(d)
         d = pickle_idea.merge_frequency(lst, lst_history)
         pickle_idea.save_frequency_to_pickle(d, path_prefix + 'static/frequency/frequency.p')
-        return render_template('mainpage_post.html', lst=lst)
+        return render_template('mainpage_post.html', lst=lst, yml=Yaml.yml)
 
     elif request.method == 'GET':  # when we load a html page
         random_ads = get_random_ads()
@@ -90,8 +92,8 @@ def mainpage():
         d = load_freq_history(path_prefix + 'static/frequency/frequency.p')
         d_len = len(d)
         lst = sort_in_descending_order(pickle_idea.dict2lst(d))
-        return render_template('mainpage_get.html', random_ads=random_ads, number_of_essays=number_of_essays, d_len=d_len,
-                               lst=lst)
+        return render_template('mainpage_get.html', random_ads=random_ads, number_of_essays=number_of_essays,
+                               d_len=d_len, lst=lst, yml=Yaml.yml)
 
 
 @app.route("/<username>/mark", methods=['GET', 'POST'])
@@ -154,116 +156,22 @@ def userpage(username):
         content = request.form['content']
         f = WordFreq(content)
         lst = f.get_freq()
-        page = '<html><body><meta charset="UTF8">'
-        page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />'
-        page += '<p>勾选不认识的单词</p>'
-        page += '<form method="post" action="/%s/mark">\n' % (username)
-        page += ' <input type="submit" name="add-btn" value="加入我的生词簿"/>\n'
-        count = 1
-        words_tests_dict = pickle_idea.load_record(path_prefix + 'static/words_and_tests.p')
-        for x in lst:
-            page += '<p><font color="grey">%d</font>: <a href="%s" title="%s">%s</a> (%d)  <input type="checkbox" name="marked" value="%s"></p>\n' % (
-                count, youdao_link(x[0]), appears_in_test(x[0], words_tests_dict), x[0], x[1], x[0])
-            count += 1
-        page += '</form>\n</body></html>'
-        return page
+        return render_template('userpage_post.html',username=username,lst = lst)
 
     elif request.method == 'GET':  # when we load a html page
-        page = '<meta charset="UTF8">\n'
-        page += '<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />\n'
-        page += '<meta name="format-detection" content="telephone=no" />\n'  # forbid treating numbers as cell numbers in smart phones
-        page += '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">'
-        page += '<link href="static/res/test.css" rel="stylesheet">'
-        page += '<title>EnglishPal Study Room for %s</title>' % username
-        page += '<div class="container-fluid">'
-        page += '''
-<p>
-<b>English Pal for <font color="red">%s</font></b> 
-    <a class="btn btn-secondary" href="/logout" role="button">登出</a>
-    <a class="btn btn-secondary" href="/reset" role="button">重设密码</a>
-</p>
-        
-''' % username
-        page += get_flashed_messages_if_any()
-        page += '<p><b>阅读文章并回答问题</b></p>\n'
-        page += ' <input type="checkbox" onclick="onReadClick()" checked />大声朗读'
-        page += ' <input type="checkbox" onclick="onChooseClick()" checked />划词入库'
-        page += '<p><a class="btn btn-success" href="/%s/reset" role="button"> 下一篇 Next Article </a></p>' % username
-        page += '<div id="text-content">%s</div>' % (get_today_article(user_freq_record, session['articleID']))
-        page += '<p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>'
-        page += '<form method="post" action="/%s">' % username
-        page += ' <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>'
-        page += ' <input type="submit" value="get 所有词的频率"/>'
-        page += ' <input type="reset" value="清除"/>'
-        page += '</form>\n'
-        page += ''' 
-                 <script>
-                   isRead = true;
-                   isChoose = true;
-                   function getWord(){ 
-                       var word = window.getSelection?window.getSelection():document.selection.createRange().text;
-                       return word;
-                   }
-                   function fillinWord(){
-                       var word = getWord();
-                       if (isRead) read(word);
-                       if (!isChoose) return;
-                       var element = document.getElementById("selected-words");
-                       element.value = element.value + " " + getWord();
-                   }
-                   document.getElementById("text-content").addEventListener("click", fillinWord, false);
-                   document.getElementById("text-content").addEventListener("touchstart", fillinWord, false);
-                   function read(s){
-                       var msg = new SpeechSynthesisUtterance(s);
-                       window.speechSynthesis.speak(msg);
-                   }
-                   function onReadClick(){
-                        isRead = !isRead;
-                   }
-                   function onChooseClick(){
-                        isChoose = !isChoose;
-                   }
-                 </script>
-                 '''
-        if session.get('thisWord'):
-            page += '''
-                   <script type="text/javascript">
-                        //point to the anchor in the page whose id is aaa if it exists
-                        window.onload = function(){
-                            var element = document.getElementsByName("aaa");
-                            if (element != null)
-                                document.getElementsByName("aaa")[0].scrollIntoView(true);
-                        }
-                   </script> 
-                   '''
-
         d = load_freq_history(user_freq_record)
-        if len(d) > 0:
-            page += '<p><b>我的生词簿</b></p>'
-            lst = pickle_idea2.dict2lst(d)
-            lst2 = []
-            for t in lst:
-                lst2.append((t[0], len(t[1])))
-            for x in sort_in_descending_order(lst2):
-                word = x[0]
-                freq = x[1]
-                if session.get('thisWord') == x[0] and session.get('time') == 1:
-                    page += '<a name="aaa"></a>'  # 3. anchor
-                    session['time'] = 0  # discard anchor
-                if isinstance(d[word], list):  # d[word] is a list of dates
-                    if freq > 1:
-                        page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (
-                            youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
-                            word)
-                    else:
-                        page += '<p class="new-word"> <a class="btn btn-light" href="%s" role="button">%s</a>(<a title="%s">%d</a>) <a class="btn btn-success" href="%s/%s/familiar" role="button">熟悉</a> <a class="btn btn-warning" href="%s/%s/unfamiliar" role="button">不熟悉</a>  <a class="btn btn-danger" href="%s/%s/del" role="button">删除</a> </p>\n' % (
-                            youdao_link(word), word, '; '.join(d[word]), freq, username, word, username, word, username,
-                            word)
-                elif isinstance(d[word], int):  # d[word] is a frequency. to migrate from old format.
-                    page += '<a href="%s">%s</a>%d\n' % (youdao_link(word), word, freq)
-        page += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
-        page += '</div>'
-        return page
+        lst = pickle_idea2.dict2lst(d)
+        lst2 = []
+        for t in lst:
+            lst2.append((t[0], len(t[1])))
+        lst3 = sort_in_descending_order(lst2)
+        return render_template('userpage_get.html',
+                               username=username,
+                               session=session,
+                               flashed_messages=get_flashed_messages_if_any(),
+                               today_article=get_today_article(user_freq_record, session['articleID']),
+                               d_len=len(d),
+                               lst3=lst3)
 
 
 ### Sign-up, login, logout ###
@@ -329,7 +237,7 @@ def logout():
 
 @app.route("/reset", methods=['GET', 'POST'])
 def reset():
-    if not session.get('logged_in'): # 未登录
+    if not session.get('logged_in'):  # 未登录
         return render_template('login.html')
     username = session['username']
     if username == '':

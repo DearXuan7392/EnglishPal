@@ -156,7 +156,7 @@ def userpage(username):
         content = request.form['content']
         f = WordFreq(content)
         lst = f.get_freq()
-        return render_template('userpage_post.html',username=username,lst = lst)
+        return render_template('userpage_post.html',username=username,lst = lst, yml=Yaml.yml)
 
     elif request.method == 'GET':  # when we load a html page
         d = load_freq_history(user_freq_record)
@@ -171,7 +171,8 @@ def userpage(username):
                                flashed_messages=get_flashed_messages_if_any(),
                                today_article=get_today_article(user_freq_record, session['articleID']),
                                d_len=len(d),
-                               lst3=lst3)
+                               lst3=lst3,
+                               yml=Yaml.yml)
 
 
 ### Sign-up, login, logout ###

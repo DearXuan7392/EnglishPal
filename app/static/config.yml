@@ -1,12 +1,12 @@
+# 主界面引入
 main:
-  head:
-    css:
-      - static/css/bootstrap.css
-    js:
+  css:
 
+  js:
+
+# 用户界面引入
 user:
-  head:
-    css:
+  css:
 
-    js:
-      - static/js/fillword.js
+  js:
+    - static/js/fillword.js

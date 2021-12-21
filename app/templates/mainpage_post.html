@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    {% for css in yml['head']['css'] %}
-    <link href="{{ css }}" rel="stylesheet">
-    {% endfor %}
-    {% for js in yml['head']['js'] %}
-    <link href="{{ js }}" rel="javascript">
-    {% endfor %}
+
+    {{ yml['header'] | safe }}
+    {% if yml['main']['css'] %}
+        {% for css in yml['main']['css'] %}
+        <link href="{{ css }}" rel="stylesheet">
+        {% endfor %}
+    {% endif %}
+    {% if yml['main']['js'] %}
+        {% for css in yml['main']['js'] %}
+        <link href="{{ css }}" rel="javascript">
+        {% endfor %}
+    {% endif %}
+
 </head>
 <body>
     <form method="post" action="/mark">
@@ -23,5 +30,6 @@
     {% endfor %}
     <input type="submit" value="确定并返回"/>
     </form>
+    {{ yml['footer'] | safe }}
 </body>
 </html>

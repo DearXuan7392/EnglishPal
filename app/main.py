@@ -244,22 +244,7 @@ def reset():
     if username == '':
         return redirect('/login')
     if request.method == 'GET':
-        page = '''
-<html>
-    <body>
-    <form action="/reset" method='POST'>
-        旧密码:
-        <input type="password" name="old-psd" />
-        <br/>
-        新密码:
-        <input type="password" name="new-psd" />
-        </body>
-        <br/>
-        <input type="submit" name="submit" value="提交" />
-        <input type="button" name="submit" value="放弃修改" onclick="window.location.href='/%s'"/>
-    </form>
-</html>
-''' % session['username']
+        return render_template('reset.html', username=session['username'])
     else:
         old_psd = request.form['old-psd']
         new_psd = request.form['new-psd']

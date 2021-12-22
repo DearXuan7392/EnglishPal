@@ -41,7 +41,6 @@ function highLight(){
             }
         }
     }
-
     document.getElementById("article").innerHTML=txt;
 }
 

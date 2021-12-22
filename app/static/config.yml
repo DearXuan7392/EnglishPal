@@ -2,7 +2,7 @@ css:
   item:
     - static/css/bootstrap.css
     - static/css/aplayercss.css
-    - static/css/custom.css
+    # - static/css/custom.css
 
 js:
   head:

@@ -11,3 +11,6 @@ js:
   bottom:
     - static/js/fillword.js
     - static/js/highlight.js
+
+highlight:
+  color: 4ba7ee

@@ -89,7 +89,7 @@ def mainpage():
     elif request.method == 'GET':  # when we load a html page
         random_ads = get_random_ads()
         number_of_essays = total_number_of_essays()
-        d = load_freq_history(path_prefix + 'static/frequency/frequeaancy.p')
+        d = load_freq_history(path_prefix + 'static/frequency/frequency.p')
         d_len = len(d)
         lst = sort_in_descending_order(pickle_idea.dict2lst(d))
         return render_template('mainpage_get.html', random_ads=random_ads, number_of_essays=number_of_essays,
@@ -199,7 +199,7 @@ def signup():
             verified = verify_user(username, password)
             if verified:
                 session['logged_in'] = True
-
+                session[username] = username
                 session['username'] = username
                 session['expiry_date'] = get_expiry_date(username)
                 session['articleID'] = None

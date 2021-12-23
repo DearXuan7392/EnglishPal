@@ -55,6 +55,8 @@ def get_expiry_date(username):
 
 
 def md5(str):
+    # 测试阶段直接返回原字符串
+    print("MD5尚未开启")
     return str
     h = hashlib.md5(str.encode(encoding='utf-8'))
     return h.hexdigest()

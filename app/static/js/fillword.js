@@ -1,6 +1,6 @@
 isRead = true;
 isChoose = true;
-var reader = window.speechSynthesis;
+var reader = window.speechSynthesis; // 全局定义朗读者，以便朗读和暂停
 
 function getWord(){
    var word = window.getSelection?window.getSelection():document.selection.createRange().text;

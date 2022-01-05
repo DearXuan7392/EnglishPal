@@ -57,13 +57,16 @@ function cancel_highLight() {
             }
         }
     }
-    for (var i = 0; i < list2.length; ++i) {
-        var list2 = sel_word2.value.split(" ");
-        list2[i] = list2[i].replace(/(^\s*)|(\s*$)/g, "");
-        if (list2[i] != "") {
-            txt = txt.replace("<mark>" + list[i] + "</mark>", "list[i]");
+    if (sel_word2 != null) {
+        for (var i = 0; i < list2.length; ++i) {
+            var list2 = sel_word2.value.split(" ");
+            list2[i] = list2[i].replace(/(^\s*)|(\s*$)/g, "");
+            if (list2[i] != "") {
+                txt = txt.replace("<mark>" + list[i] + "</mark>", "list[i]");
+            }
         }
     }
+
     document.getElementById("article").innerHTML = txt;
 }
 

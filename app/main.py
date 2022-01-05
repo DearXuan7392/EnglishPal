@@ -145,8 +145,8 @@ def userpage(username):
         return render_template('not_login.html')
 
     user_expiry_date = session.get('expiry_date')
-    if datetime.now().strftime('%Y%m%d') > user_expiry_date:
-        return render_template('out_time.html')
+    # if datetime.now().strftime('%Y%m%d') > user_expiry_date:
+    #     return render_template('out_time.html')
 
     username = session.get('username')
 

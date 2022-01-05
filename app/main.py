@@ -18,17 +18,32 @@ path_prefix = './'  # comment this line in deployment
 
 
 def get_random_image(path):
+    '''
+    返回随机图
+    :param path: 图片文件(JPEG格式)，不包含后缀名
+    :return:
+    '''
     img_path = random.choice(glob.glob(os.path.join(path, '*.jpg')))
 
     return img_path[img_path.rfind('/static'):]
 
 
 def get_random_ads():
+    '''
+    返回随机广告
+    :return: 一个广告(包含HTML标签)
+    '''
     ads = random.choice(['个性化分析精准提升', '你的专有单词本', '智能捕捉阅读弱点，针对性提高你的阅读水平'])
     return ads + '。 <a href="/signup">试试</a>吧！'
 
 
 def appears_in_test(word, d):
+    '''
+    如果字符串里没有指定的单词，则返回逗号加单词
+    :param word: 指定单词
+    :param d: 字符串
+    :return: 逗号加单词
+    '''
     if not word in d:
         return ''
     else:
@@ -36,10 +51,18 @@ def appears_in_test(word, d):
 
 
 def get_time():
+    '''
+    获取当前时间
+    :return: 当前时间
+    '''
     return datetime.now().strftime('%Y%m%d%H%M')  # upper to minutes
 
 
 def get_flashed_messages_if_any():
+    '''
+    在用户界面显示黄色提示信息
+    :return: 包含HTML标签的提示信息
+    '''
     messages = get_flashed_messages()
     s = ''
     for message in messages:
@@ -51,6 +74,11 @@ def get_flashed_messages_if_any():
 
 @app.route("/<username>/reset", methods=['GET', 'POST'])
 def user_reset(username):
+    '''
+    用户界面
+    :param username: 用户名
+    :return: 返回页面内容
+    '''
     if request.method == 'GET':
         session['articleID'] = None
         return redirect(url_for('userpage', username=username))
@@ -60,6 +88,10 @@ def user_reset(username):
 
 @app.route("/mark", methods=['GET', 'POST'])
 def mark_word():
+    '''
+    标记单词
+    :return: 重定位到主界面
+    '''
     if request.method == 'POST':
         d = load_freq_history(path_prefix + 'static/frequency/frequency.p')
         lst_history = pickle_idea.dict2lst(d)
@@ -69,12 +101,16 @@ def mark_word():
         d = pickle_idea.merge_frequency(lst, lst_history)
         pickle_idea.save_frequency_to_pickle(d, path_prefix + 'static/frequency/frequency.p')
         return redirect(url_for('mainpage'))
-    else:
+    else: # 不回应GET请求
         return 'Under construction'
 
 
 @app.route("/", methods=['GET', 'POST'])
 def mainpage():
+    '''
+    根据GET或POST方法来返回不同的主界面
+    :return: 主界面
+    '''
     if request.method == 'POST':  # when we submit a form
         content = request.form['content']
         f = WordFreq(content)
@@ -98,9 +134,15 @@ def mainpage():
 
 @app.route("/<username>/mark", methods=['GET', 'POST'])
 def user_mark_word(username):
+    '''
+    标记单词
+    :param username: 用户名
+    :return: 重定位到用户界面
+    '''
     username = session[username]
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     if request.method == 'POST':
+        # 提交标记的单词
         d = load_freq_history(user_freq_record)
         lst_history = pickle_idea2.dict2lst(d)
         lst = []
@@ -115,6 +157,12 @@ def user_mark_word(username):
 
 @app.route("/<username>/<word>/unfamiliar", methods=['GET', 'POST'])
 def unfamiliar(username, word):
+    '''
+
+    :param username:
+    :param word:
+    :return:
+    '''
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     pickle_idea.unfamiliar(user_freq_record, word)
     session['thisWord'] = word  # 1. put a word into session
@@ -124,6 +172,12 @@ def unfamiliar(username, word):
 
 @app.route("/<username>/<word>/familiar", methods=['GET', 'POST'])
 def familiar(username, word):
+    '''
+
+    :param username:
+    :param word:
+    :return:
+    '''
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     pickle_idea.familiar(user_freq_record, word)
     session['thisWord'] = word  # 1. put a word into session
@@ -133,6 +187,12 @@ def familiar(username, word):
 
 @app.route("/<username>/<word>/del", methods=['GET', 'POST'])
 def deleteword(username, word):
+    '''
+    删除单词
+    :param username: 用户名
+    :param word: 单词
+    :return: 重定位到用户界面
+    '''
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     pickle_idea2.deleteRecord(user_freq_record, word)
     flash(f'<strong>{word}</strong> is no longer in your word list.')
@@ -141,13 +201,21 @@ def deleteword(username, word):
 
 @app.route("/<username>", methods=['GET', 'POST'])
 def userpage(username):
+    '''
+    用户界面
+    :param username: 用户名
+    :return: 返回用户界面
+    '''
+    # 未登录，跳转到未登录界面
     if not session.get('logged_in'):
         return render_template('not_login.html')
 
+    # 用户过期
     user_expiry_date = session.get('expiry_date')
     # if datetime.now().strftime('%Y%m%d') > user_expiry_date:
     #     return render_template('out_time.html')
 
+    # 获取session里的用户名
     username = session.get('username')
 
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
@@ -182,22 +250,29 @@ def userpage(username):
 ### Sign-up, login, logout ###
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
+    '''
+    注册
+    :return: 根据注册是否成功返回不同界面
+    '''
     if request.method == 'GET':
+        # GET方法直接返回注册页面
         return render_template('signup.html')
     elif request.method == 'POST':
+        # POST方法需判断是否注册成功，再根据结果返回不同的内容
         username = request.form['username']
         password = request.form['password']
 
         available = check_username_availability(username)
-        if not available:
+        if not available: # 用户名不可用
             flash('用户名 %s 已经被注册。' % (username))
             return render_template('signup.html')
-        elif len(password.strip()) < 4:
+        elif len(password.strip()) < 4: # 密码过短
             return '密码过于简单。'
-        else:
+        else: # 添加账户信息
             add_user(username, password)
             verified = verify_user(username, password)
             if verified:
+                # 写入session
                 session['logged_in'] = True
                 session[username] = username
                 session['username'] = username
@@ -211,18 +286,27 @@ def signup():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    '''
+    登录
+    :return: 根据登录是否成功返回不同页面
+    '''
     if request.method == 'GET':
+        # GET请求
         if not session.get('logged_in'):
+            # 未登录，返回登录页面
             return render_template('login.html')
         else:
+            # 已登录，提示信息并显示登出按钮
             return '你已登录 <a href="/%s">%s</a>。 登出点击<a href="/logout">这里</a>。' % (
                 session['username'], session['username'])
     elif request.method == 'POST':
+        # POST方法用于判断登录是否成功
         # check database and verify user
         username = request.form['username']
         password = request.form['password']
         verified = verify_user(username, password)
         if verified:
+            # 登录成功，写入session
             session['logged_in'] = True
             session[username] = username
             session['username'] = username
@@ -236,23 +320,35 @@ def login():
 
 @app.route("/logout", methods=['GET', 'POST'])
 def logout():
+    '''
+    登出
+    :return: 重定位到主界面
+    '''
+    # 将session标记为登出状态
     session['logged_in'] = False
     return redirect(url_for('mainpage'))
 
 
 @app.route("/reset", methods=['GET', 'POST'])
 def reset():
-    if not session.get('logged_in'):  # 未登录
+    '''
+    重设密码
+    :return: 返回适当的页面
+    '''
+    # 下列方法用于防止未登录状态下的修改密码
+    if not session.get('logged_in'):
         return render_template('login.html')
     username = session['username']
     if username == '':
         return redirect('/login')
     if request.method == 'GET':
+        # GET请求返回修改密码页面
         return render_template('reset.html', username=session['username'], state='wait')
     else:
+        # POST请求用于提交修改后信息
         old_psd = request.form['old-psd']
         new_psd = request.form['new-psd']
-        flag = change_password(username, old_psd, new_psd)
+        flag = change_password(username, old_psd, new_psd) # flag表示是否修改成功
         if flag:
             session['logged_in'] = False
             return \
@@ -276,6 +372,9 @@ window.location.href="/reset";
 
 
 if __name__ == '__main__':
+    '''
+    运行程序
+    '''
     # app.secret_key = os.urandom(16)
     # app.run(debug=False, port='6000')
     app.run(debug=True)

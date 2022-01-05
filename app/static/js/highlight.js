@@ -1,3 +1,5 @@
+var isHighlight = true;
+
 function cancelBtnHandler() {
     cancel_highLight();
     document.getElementById("text-content").removeEventListener("click", fillinWord, false);
@@ -20,6 +22,7 @@ function getWord() {
 }
 
 function highLight() {
+    if(!isHighlight) return;
     var txt = document.getElementById("article").innerText;
     var sel_word1 = document.getElementById("selected-words");
     var sel_word2 = document.getElementById("selected-words2");
@@ -58,6 +61,7 @@ function cancel_highLight() {
         }
     }
     if (sel_word2 != null) {
+        var list2 = sel_word1.value.split(" ");
         for (var i = 0; i < list2.length; ++i) {
             var list2 = sel_word2.value.split(" ");
             list2[i] = list2[i].replace(/(^\s*)|(\s*$)/g, "");
@@ -66,7 +70,6 @@ function cancel_highLight() {
             }
         }
     }
-
     document.getElementById("article").innerHTML = txt;
 }
 
@@ -78,15 +81,14 @@ function fillinWord2() {
     cancel_highLight();
 }
 
-var isHighlight = true;
-
 function ChangeHighlight() {
     if (isHighlight) {
-        cancel_highLight();
         isHighlight = false;
+        cancel_highLight();
     } else {
-        highLight();
         isHighlight = true;
+        highLight();
+
     }
 }
 
